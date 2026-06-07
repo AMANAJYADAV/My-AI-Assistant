@@ -40,3 +40,11 @@ Veronica operates using a split-environment design, isolating heavy local machin
 Due to specific C++ binary requirements for local audio processing, use an Anaconda environment. Note that `numpy` is strictly pinned to prevent binary incompatibility with older transformer wheels.
 ```bash
 pip install -r requirements.txt
+
+```
+
+On Ubuntu/Debian, install the PortAudio system libraries before installing Python dependencies:
+
+```bash
+sudo apt install portaudio19-dev libportaudio2
+```
