@@ -7,3 +7,6 @@ python-dotenv
 pyautogui
 groq
 sounddevice
+soundfile
+torch torchvision torchaudio
+av==17.0.1
