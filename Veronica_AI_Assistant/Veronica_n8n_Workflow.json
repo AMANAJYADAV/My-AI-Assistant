@@ -1,0 +1,557 @@
+{
+  "name": "Jarvis Autonomous Ingestion Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        4560,
+        1872
+      ],
+      "id": "668d7511-389e-40ba-ba45-e5f6faf8e471",
+      "name": "When chat message received",
+      "webhookId": "4ef1bb8f-9537-4172-bfb8-61789ed5a8c9"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        5152,
+        2256
+      ],
+      "id": "530f5bf4-1bc2-4806-a62b-6c3fba23c690",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dqYwqzvtWwUMEDG7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "a5e63f5f-7a64-4433-95fc-8c0f338163f4",
+      "name": "Calculator1",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        5520,
+        2208
+      ]
+    },
+    {
+      "parameters": {
+        "name": "veronica_memory",
+        "description": "Call this tool to search through the user's specific Google Drive folder ('Veronica_Learning_Input'). This folder contains highly technical study materials on mathematics, fluid dynamics (Darcy's Law, Brinkman equations), machine learning, and GATE AI preparation. Use this tool whenever the user asks about these subjects",
+        "topK": 5
+      },
+      "id": "25d7690d-a054-4917-a08b-23d43371ce18",
+      "name": "PDF Memory (Vector Tool)1",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        6464,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "veronica_memory_768",
+          "mode": "list",
+          "cachedResultName": "veronica_memory_768"
+        },
+        "options": {}
+      },
+      "id": "2399223f-46bf-436b-a2bb-e6a2405cf63c",
+      "name": "Qdrant Vector Store (Retrieve)1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        6576,
+        2528
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "IGFRgkL6I1zwGmaG",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "274449e4-e100-483f-b82b-e9ad7ddc7259",
+      "name": "Hugging Face Embeddings (Retrieve)1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        6736,
+        2880
+      ],
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "XH8ggcWeVewVKExH",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "veronica-voice",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        4800,
+        2096
+      ],
+      "id": "18854b2f-9de7-4094-beaf-f3796afdbb14",
+      "name": "Webhook1",
+      "webhookId": "12df7fbc-e844-49b7-9c36-5756c1e87bcd"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=aman-veronica-session-2",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        5328,
+        2224
+      ],
+      "id": "fab58669-619f-49ef-9afe-7602ae454562",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput || $json.body.message || $json.body.query }}",
+        "options": {
+          "systemMessage": "You are Veronica, an elite personal AI assistant to Aman. \n\nCORE DIRECTIVES:\n1. Use 'Veronica Hands' to physically control or execute tasks on Aman's machine. This tool strictly expects two parameters: an 'action' and a 'payload'. \n   - When Aman asks to open a website (like YouTube, Google, etc.), you MUST set action=\"site\" and payload=\"websitename\" (e.g., action=\"site\", payload=\"youtube\"). \n   - When Aman asks to open a local desktop application (like Chrome, Mathematica), you MUST set action=\"app\" and payload=\"appname\" (e.g., action=\"app\", payload=\"chrome\"). \n   - Do not use invented actions like \"Open_Application\" or \"Open_Browser\".\n2. Use 'Veronica Eyes' to visually scan and analyze Aman's screen space to read UI elements, especially for tracking his Mathematica code blocks or fluid dynamics equations.\n3. Use 'Search in Tavily' to find up-to-date facts, data, or real-time web knowledge.\n4. Use 'Calculator' for evaluating precise mathematical models, parameter constraints, or physics calculations.\n5. Use 'PDF Memory (Vector Tool)' to search through Aman's specific research papers and engineering textbooks.\n6. Use 'Code Tool' to check local conversation history strings.\n\nCOMMUNICATION STYLE:\nBe highly intelligent, proactive, and concise. Always use a direct, active tone (e.g., 'hm krenge' or 'we will do this' instead of 'we can do this'). Never apologize passively; state what is being corrected and execute it."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        5440,
+        1920
+      ],
+      "id": "a51d6b20-f6a1-4c29-8d8f-bd5fac07b3e6",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to physically control the computer desktop, applications, and windows. You MUST provide two lowercase arguments: 'action' and 'payload'. To open any software, app, or browser (e.g., Chrome, Mathematica, Notepad), set action=\"open\" and payload=\"app_name\" (e.g., action=\"open\", payload=\"chrome\"). Do not invent actions like \"Open_Application\" or \"Open_Browser\". Use exactly what the script accepts.",
+        "command": "==\"C:\\Users\\aman0\\anaconda_distribution\\python.exe\" \"D:\\veronica-core\\veronica_hands.py\" {{ $fromAI('action', 'The physical action to execute on screen', 'string') }} \"{{ $fromAI('payload', 'The text or coordinates needed for the action', 'string') }}\" ALLOWED"
+      },
+      "type": "n8n-nodes-base.executeCommandTool",
+      "typeVersion": 1,
+      "position": [
+        5664,
+        2192
+      ],
+      "id": "b7bf6650-d2bc-4e7c-a861-f51b56b71af3",
+      "name": "Veronica Hands"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to visually analyze and scan the user's screen space to locate user interface elements, windows, text, or equations. You MUST provide two lowercase arguments: 'mode' and 'target'. For example, to scan for an open window, set mode=\"scan\" and target=\"mathematica\". Do not guess coordinates; use this tool to let the vision script find them.",
+        "command": "=\"C:\\Python314\\python.exe\" \"D:\\veronica-core\\veronica_perception.py\" {{ $fromAI('mode', 'The visual scanning mode to use', 'string') }} \"{{ $fromAI('target', 'What specific element to look for on the screen', 'string') }}\""
+      },
+      "type": "n8n-nodes-base.executeCommandTool",
+      "typeVersion": 1,
+      "position": [
+        5824,
+        2192
+      ],
+      "id": "fb0456f6-481a-4316-add8-4c2043c172fb",
+      "name": "Veronica Eyes"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to read the last 10 lines of the local text file veronica_memory.txt...",
+        "jsCode": "// This first line is required so n8n registers a valid AI parameter schema\nconst intent = \"{{ $fromAI('intent', 'Why you are reading the memory file', 'string') }}\";\n\nconst fs = require('fs');\n// Change this line from the Linux Docker path to your true Windows storage path:\nconst filePath = 'D:\\\\veronica-core\\\\veronica_memory.txt'; \n\ntry {\n  const data = fs.readFileSync(filePath, 'utf8');\n  const lines = data.trim().split('\\n');\n  return lines.slice(-10).join('\\n');\n} catch (err) {\n  return \"No memory file found.\";\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        6080,
+        2192
+      ],
+      "id": "5bcbd619-7cc9-4484-b06c-628df96d2b81",
+      "name": "Code Tool1"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        6416,
+        2192
+      ],
+      "id": "d0c30d86-f839-47cd-a630-6773eec32da1",
+      "name": "Search in Tavily1",
+      "credentials": {
+        "tavilyApi": {
+          "id": "WPHXw4Vw1NRqlKUc",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 50,
+        "options": {}
+      },
+      "id": "8d364067-8e13-4e40-8c17-dc27edc2a3ad",
+      "name": "Recursive Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        6144,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "18A7OOmJCBoG2dTjyAH4NrbbAhiIymjTb",
+          "mode": "list",
+          "cachedResultName": "Veronica_Learning_Input"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "d287cae1-b0f1-499c-a260-c8e3ec99bdf1",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        5376,
+        816
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "H3yuXu72eN3PkGTs",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": "={{ $json.id }}",
+        "options": {}
+      },
+      "id": "b987f935-1299-4148-9a91-2f072827a749",
+      "name": "Google Drive Download1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        5600,
+        816
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "H3yuXu72eN3PkGTs",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9598527b-5a3b-49a9-9d88-74aaba56ad55",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        6064,
+        992
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "veronica_memory_768",
+          "mode": "list",
+          "cachedResultName": "veronica_memory_768"
+        },
+        "options": {}
+      },
+      "id": "33b6a68b-2ce6-4198-99e1-3b242600991e",
+      "name": "Qdrant Vector Store (Insert)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        5872,
+        816
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "IGFRgkL6I1zwGmaG",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3c8f4e48-5d43-4ebb-b4cd-233736ee5c75",
+      "name": "Hugging Face Embeddings (Insert)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        5824,
+        1040
+      ],
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "XH8ggcWeVewVKExH",
+          "name": "Hugging Face account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "PDF Memory (Vector Tool)1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF Memory (Vector Tool)1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store (Retrieve)1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "PDF Memory (Vector Tool)1",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hugging Face Embeddings (Retrieve)1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store (Retrieve)1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Veronica Hands": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Veronica Eyes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Download1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Download1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store (Insert)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store (Insert)",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hugging Face Embeddings (Insert)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store (Insert)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f0476634-faf9-4530-b52d-74ded396ab8c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "76c53de71512d0be7a58ef36ea76aeb5158ffc453a626620142e000b0bf26369"
+  },
+  "id": "oiJOvRlaQXbfCnqy",
+  "tags": []
+}

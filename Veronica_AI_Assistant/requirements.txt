@@ -1,0 +1,8 @@
+faster-whisper==1.2.1
+kokoro==0.9.4
+numpy==1.26.4
+requests
+python-dotenv
+pyautogui
+groq
+sounddevice
