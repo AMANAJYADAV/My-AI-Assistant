@@ -1,0 +1,1 @@
+-r Veronica_AI_Assistant/requirements.txt

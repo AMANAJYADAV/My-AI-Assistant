@@ -8,5 +8,11 @@ pyautogui
 groq
 sounddevice
 soundfile
-torch torchvision torchaudio
+torch
+torchvision
+torchaudio
 av==17.0.1
+attrs
+ctranslate2
+tokenizers
+loguru
